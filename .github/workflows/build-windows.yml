@@ -1,16 +1,31 @@
+name: build-windows-exe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
       - name: Build EXE with PyInstaller (cmd shell)
         shell: cmd
         run: |
-          echo ---- Python info ----
-          python --version
-          where python
-          pip --version
-          pip list
-
-          echo ---- Repo files (root) ----
-          dir
-
-          echo ---- Build with PyInstaller ----
           pyinstaller ^
             -F ^
             --clean ^
@@ -19,3 +34,9 @@
             --collect-all numpy ^
             --collect-all openpyxl ^
             "素材人效日汇总_v2.3.1.py"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: exe-build
+          path: dist/**
